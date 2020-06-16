@@ -5,6 +5,7 @@ from flask_login import LoginManager
 
 app = Flask(__name__)
 api = Blueprint('api', __name__)
+app.register_blueprint(api, url_prefix='/api/v1')
 
 login = LoginManager(app)
 
