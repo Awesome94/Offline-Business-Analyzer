@@ -1,11 +1,32 @@
 from werkzeug.security import generate_password_hash
-from flask import jsonify, request, current_app, url_for
+from flask import jsonify, make_response, request, current_app, url_for
 from . import api
 from ..models import User
+from app.helpers import response
 
-@api.route('/', methods=['GET'])
-def index():
-    return "this is awesomer than you"
+@api.route('/register', methods=['POST'])
+def register_user():
+    user = User.query.filter_by(email=request.json.get('email')).first()
+    if not user:
+        try:
+            post_data = request.json
+            email = post_data.get("email")
+            firstname = post_data.get("firstname")
+            lastname = post_data.get("lastname")
+            password = post_data.get("password")
+            user = User(email =email, firstname=firstname, 
+                        lastname=lastname,
+                        password=password
+                    )
+            user.save()
+        except Exception as e:
+            result = {
+                'message': str(e)
+            }
+            return make_response(jsonify(result)), 401
+    else:
+        return response('User already exists', 'Please Login', 202)
+    return "user registered successfully"
 
 @api.route('/users')
 def get_users():
@@ -18,9 +39,6 @@ def get_user(id):
     user = User.query.get_or_404(id)
     return jsonify(user.to_json())
 
-@api.route('/register', methods=['POST'])
-def register_user():
-    return "user registered successfully"
 
 @api.route('/users/<int:id>/business/all')
 def get_all_businesses(id):
