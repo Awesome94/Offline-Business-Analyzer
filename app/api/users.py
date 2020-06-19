@@ -1,9 +1,13 @@
 from werkzeug.security import generate_password_hash
 from flask import jsonify, make_response, request, current_app, url_for
 from . import api
-from ..models import User
+from app.models import User
 from app.helpers import response
+from app.model_schemas import user_schema
 
+@api.route('/')
+def index():
+    return response('success', "Welcome to offline Business application", 200)
 
 @api.route('/register', methods=['POST'])
 def register_user():
@@ -15,11 +19,9 @@ def register_user():
             firstname = post_data.get("firstname")
             lastname = post_data.get("lastname")
             password = post_data.get("password")
-            user = User(email=email, firstname=firstname,
-                        lastname=lastname,
-                        password=password
-                        )
+            user = User(firstname, lastname, email, password)
             user.save()
+            return response('success', 'account created successfully', 201)
         except Exception as e:
             result = {
                 'message': str(e)
@@ -30,19 +32,19 @@ def register_user():
     return "user registered successfully"
 
 
-@api.route('/v1/login', methods=['POST'])
+@api.route('/login', methods=['POST'])
 def login_user():
     try:
         # Get the user object using their email
         user = User.query.filter_by(email=request.json.get('email')).first()
         # Try to authenticate the found user using their password
-        if user and user.password_is_valid(request.json.get('password')):
+        if user and user.verify_password(request.json.get('password')):
             # Generate the access token. This will be used as the authorization header
             access_token = user.generate_token(user.id)
             if access_token:
                 response = {
                     'message': 'You logged in successfully.',
-                    'access_token': access_token.decode()
+                    'access_token': access_token
                 }
                 return make_response(jsonify(response)), 200
         else:
@@ -60,12 +62,12 @@ def login_user():
         return make_response(jsonify(response)), 500
 
 
-@api.route('/v1/logout', methods=['POST'])
+@api.route('/logout', methods=['POST'])
 def log_out(self):
     return "logout successful"
 
 
-@api.route('/users')
+@api.route('/users/all')
 def get_users():
     users = User.query.all()
     return "this is awesoem"
@@ -74,19 +76,21 @@ def get_users():
 
 @api.route('/users/<int:id>')
 def get_user(id):
-    user = User.query.get_or_404(id)
-    return jsonify(user.to_json())
+    import pdb; pdb.set_trace()
+    user = User.query.filter_by(id=id)
+    result = user_schema.dump(user)
+    return jsonify(result)
 
 
 @api.route('/users/<int:id>/business/all')
-def get_all_businesses(id):
+def get_all_businesses():
     """
     return all business that belong to a given user
     """
 
 
-@api.route('/users/<int:id>/business/<int:id>')
-def get_business_from_id(id):
+@api.route('/users/<int:id>/business/')
+def get_business_from_id():
     """
     get business by id that belongs to a particular user
     """

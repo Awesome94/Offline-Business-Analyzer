@@ -1,5 +1,5 @@
 from flask import Flask, request, g, Blueprint
-
+from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from os import environ
@@ -7,7 +7,9 @@ from os import environ
 app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 login = LoginManager(app)
 
 
