@@ -1,8 +1,7 @@
-from . import db
+from . import db, token_gen
 from datetime import datetime
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request, url_for
 from flask_login import UserMixin, AnonymousUserMixin
 
@@ -15,6 +14,7 @@ class User(db.Model):
     firstname = db.Column(db.String, nullable=False)
     lastname = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
     def __init__(self, firstname, lastname, email, password):
         self.firstname = firstname
@@ -26,12 +26,8 @@ class User(db.Model):
         return check_password_hash(self.password, password)
     
     def generate_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm':self.id}).decode('utf-8')
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+        token = token_gen.dumps({'confirm':self.id}).decode('utf-8')
+        return token
     
     def get_user(id):
         return User.query.filter_by(id=id)
@@ -39,15 +35,17 @@ class User(db.Model):
     def get_all():
         return User.query.all()
     
-    def delete_user(id):
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+    
+    def delete(id):
         user = User.query.filter_by(id=id).first()
         db.session.delete(user)
         db.session.commit()
-
     
     def __repr__(self):
         return '<User {}>'.format(self.firstname)
-
 
 class Business(db.Model):
     __tablename__ = 'businesses'
@@ -64,7 +62,7 @@ class Business(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     user = db.relationship(
-        'user',
+        'User',
         backref=db.backref('businesses', lazy='dynamic'),
         uselist=False
     )
@@ -79,15 +77,23 @@ class Business(db.Model):
         self.accounting_software = accounting_software
         self.user_id = user_id
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-    
     def get_all():
         return Business.query.all()
     
     def get_business(id):
         return Business.query.filter_by(id=id)
+    
+    def get_current_user_business(id):
+        return Business.query.filter_by(user_id=id)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+    
+    def delete(id):
+        business = Business.query.filter_by(id=id).first()
+        db.session.delete(business)
+        db.session.commit()
 
 class Transactions(db.Model):
     __tablename__ = 'transaction_details'
@@ -104,7 +110,7 @@ class Transactions(db.Model):
     business_id = db.Column(db.Integer, db.ForeignKey('businesses.id'))
 
     business = db.relationship(
-        'business',
+        'Business',
         backref=db.backref('transaction_details', lazy='dynamic'),
         uselist=False
     )
@@ -120,9 +126,6 @@ class Transactions(db.Model):
         self.total_transaction_amount = total_transaction_amount
         self.business_id = business_id
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
         
     def get_all():
         return Business.query.all()
@@ -132,3 +135,12 @@ class Transactions(db.Model):
     
     def get_business_transactions(id):
         return Business.query.filter_by(business_id=id)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+    
+    def delete(id):
+        transaction = Transactions.session.query.filter_by(id=id)
+        db.session.delete(transaction)
+        db.session.commit()
