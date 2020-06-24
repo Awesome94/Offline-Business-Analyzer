@@ -26,3 +26,21 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+
+class DockerConfig(ProductionConfig):
+    @classmethod
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
+
+        import logging
+        from logging import StreamHandler
+        file_handler = StreamHandler
+        file_handler.setLevel(logging.INFO)
+        app.logger.addhandler(file_handler)
+
+Config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'docker': DockerConfig
+}
