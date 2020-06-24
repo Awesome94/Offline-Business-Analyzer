@@ -7,17 +7,20 @@ ENV FLASK_CONFIG docker
 RUN adduser -D oba
 # USER root
 
+RUN mkdir home/oba-python-api
+
 WORKDIR /home/oba-python-api
 
 COPY requirements.txt requirements.txt
 RUN python -m venv venv 
 
-# RUN apk add postgresql-dev
+RUN apk add postgresql-dev
+RUN pip install -r requirements.txt
 USER oba
 
-RUN pip install -r requirements.txt
 
 COPY app app
+COPY .env .env
 COPY migrations migrations
 COPY manage.py config.py boot.sh ./
 
