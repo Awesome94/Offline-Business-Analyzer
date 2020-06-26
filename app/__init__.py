@@ -1,3 +1,4 @@
+import boto3
 from flask import Flask, request, g, Blueprint, current_app
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
@@ -8,12 +9,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 token_gen = Serializer(app.config['SECRET_KEY'], app.config['TOKEN_EXPIRATION'])
 
+s3 = boto3.resource('s3')
+s3_path = 's3:://{name of the bucket}/{csv_name}'
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
