@@ -5,6 +5,7 @@ from app.helpers import response, token_required
 import os
 import csv
 from flask_login import current_user
+from app.model_schemas import business_schema
 
 UPLOAD_DIRECTORY = "/Users/awesome/BusinessAnalyzer/oba-python-api/tests/"
 HEADERS = ['transaction', 'id', 'status', 'due date', 'customer or supplier',
@@ -13,7 +14,7 @@ HEADERS = ['transaction', 'id', 'status', 'due date', 'customer or supplier',
 
 @api.route('/business/register', methods=['POST'])
 def register():
-    business = Business.query.filter_by(email=request.json.get('name')).first()
+    business = None
     if not business:
         try:
             post_data = request.json
@@ -21,12 +22,12 @@ def register():
             abbreviation = post_data.get("abbreviation")
             company_address = post_data.get("company_address")
             country = post_data.get("country")
-            operations = post_data.get("countries_of_operation")
+            countries = post_data.get("countries_of_operation")
             annual_sales_revenue = post_data.get("annual_sales_revenue")
             software = post_data.get("software")
             business = Business(name=name, abbreviation=abbreviation,
                                 company_address=company_address, country=country,
-                                countries_of_operation=operations, annual_sales_revenue=annual_sales_revenue,
+                                countries=countries, annual_sales_revenue=annual_sales_revenue,
                                 accounting_software=software
                                 )
             business.save()
@@ -42,18 +43,29 @@ def register():
 
 
 @api.route('/business/<int:id>')
-def get_business(id):
-    result = Business.get_business(id)
-    return jsonify(result)
+@token_required
+def get_business(current_user, id):
+    if not isinstance(id, int):
+        return response('Bad request', 'Id must be integer', 500)
+    if current_user.is_admin:
+        result = Business.get_business(id)
+    else:
+        Business.get_current_user_business(id)
+    return jsonify(business_schema.dump(result))
 
 
 @api.route('/businesses/all')
-def get_all_businesses():
+@token_required
+def get_all_businesses(current_user):
     """
     return all businesses if current user is admin, we return all businesses else we
     only return bussinesses that belong to the current user. 
     """
-    pass
+    if current_user.is_admin:
+        result = Business.get_all()
+    else:
+        result = Business.get_current_all_user_business(current_user.id)
+    return jsonify(business_schema.dump(result))
 
 
 @api.route('/business/upload/<filename>', methods=['POST'])

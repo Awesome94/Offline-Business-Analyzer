@@ -1,4 +1,4 @@
-from app.models import User, Business, Transactions
+from app.models import User, Business, Transaction
 from app import ma
 
 class UserSchema(ma.Schema):
@@ -11,9 +11,9 @@ class BusinessSchema(ma.Schema):
         'countries', 'annual_sales_revenue', 'Entity', 
         'accounting_software', 'user_id')
 
-class TransactionsSchema(ma.Schema):
+class TransactionSchema(ma.Schema):
     class Meta:
-        fields = ('transaction', 'status', 'due_date', 
+        fields = ('name', 'status', 'due_date', 
         'customer_or_supplier', 'item', 'quantity', 
         'unit_amount', 'total_transaction_amount', 
         'business_id')
@@ -24,5 +24,5 @@ user_schema = UserSchema(many=True)
 business_schema = BusinessSchema()
 business_schema = BusinessSchema(many=True)
 
-transactions_schema = TransactionsSchema()
-transactions_schema = TransactionsSchema(many=True)
+transactions_schema = TransactionSchema()
+transactions_schema = TransactionSchema(many=True)
