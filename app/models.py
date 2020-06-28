@@ -151,39 +151,36 @@ class Transaction(db.Model):
         return Business.query.filter_by(business_id=id)
 
     def get_top_items_by_quantity(days=30):
-        """
-        Transaction should be an order. 
-        and must have the highest  unit quantity
-        """
-        items = Transactions.query.filter(Transactions.transaction_date == date.today(
-        ) - timedelta(days=days), Transactions.transaction == "order").all()
-
+        items = Transaction.query.filter(Transaction.transaction_date == date.today(
+        ) - timedelta(days=days), Transaction.name == Transaction.name.order.value).order_by(Transaction.quantity.desc()).all()
         return items
 
     def get_top_items_by_value(days=30):
-        """
-        Transaction should be an order. 
-        and must have the highest  unit Amount
-        """
-        pass
+        items = Transaction.query.filter(Transaction.transaction_date == date.today(
+        ) - timedelta(days=days), Transaction.name == Transaction.name.order.value).order_by(Transaction.unit_amount.desc()).all()
+        return items
 
     def get_incoming_amount(days=30):
-        """
-        get sum of all transaction from a given period of time 
-        """
-        pass
+        total_sum = []
+        items = Transaction.query.filter(Transaction.transaction_date == date.today(
+        ) - timedelta(days=days), Transaction.name == Transaction.name.order_payement.value).order_by(Transaction.total_transaction_amount.desc()).all()
+        for item in items:
+            total_sum.append(item.total_transaction_amount)
+        return sum(total_sum)
 
     def get_outgoing_amount(days=30):
-        """
-        get sum of all bill payement transactions for a given user
-        """
-        pass
+        total_sum = []
+        items = Transaction.query.filter(Transaction.transaction_date == date.today(
+        ) - timedelta(days=days), Transaction.name == Transaction.name.bill_payement.value).order_by(Transaction.total_transaction_amount.desc()).all()
+        for item in items:
+            total_sum.append(item.total_transaction_amount)
+        return sum(total_sum)
 
     def save(self):
         db.session.add(self)
         db.session.commit()
 
     def delete(id):
-        transaction = Transactions.session.query.filter_by(id=id)
+        transaction = Transaction.session.query.filter_by(id=id)
         db.session.delete(transaction)
         db.session.commit()
