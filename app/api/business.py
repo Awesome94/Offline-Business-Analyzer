@@ -92,17 +92,10 @@ def upload_transaction_details(filename):
 
 @api.route('/business/amount/incoming/<int:days>')
 def show_incoming(days):
-    pass
-
+    result = Business.get_incoming_amount(days)
+    return
 
 api.route('/business/amount/outgoing/<int:days>')
 def show_outgoing(days):
-    pass
-
-
-# def show_outgoing(days):
-#     result = Transaction.query.filter_by()
-#     pass
-
-# Order payememnt: receipt of payement from customer against the order
-# Bill payement: payement of bill request going to supplier.
+    result = Business.get_outgoing_amount(days)
+    return
