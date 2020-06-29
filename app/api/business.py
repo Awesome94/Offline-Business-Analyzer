@@ -7,10 +7,22 @@ import csv
 from flask_login import current_user
 from app.model_schemas import business_schema
 
-UPLOAD_DIRECTORY = "/Users/awesome/BusinessAnalyzer/oba-python-api/tests/"
-HEADERS = ['transaction', 'id', 'status', 'due date', 'customer or supplier',
-           'item', 'quantity', 'unit amount', 'total transaction', 'amount']
+import pandas as pd
 
+UPLOAD_DIRECTORY = "/Users/awesome/BusinessAnalyzer/oba-python-api/tests/"
+HEADERS = ['Transaction', 'ID', 'Status', 'Transaction Date', 'Due date', 'Customer or Supplier',
+           'Item', 'Quantity', 'Unit Amount', 'Total Transaction Amount']
+
+ALLOWED_EXTENSIONS = set(['csv'])
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def check_headers(filename):
+    csv_reader = csv.reader(file.filename, delimiter=',')
+    for row in csv_reader:
+        return
 
 @api.route('/business/register', methods=['POST'])
 def register():
@@ -68,34 +80,44 @@ def get_all_businesses(current_user):
     return jsonify(business_schema.dump(result))
 
 
-@api.route('/business/upload/<filename>', methods=['POST'])
+@api.route('/business/upload', methods=['POST'])
 @token_required
 def upload_transaction_details(filename):
-    if "/" in filename:
-        abort(400, "no subdirectories directories allowed")
-    with open(os.path.join(UPLOAD_DIRECTORY, filename)) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            if line_count == 0:
-                for x in HEADERS:
-                    if x.lower() not in row:
-                        return response('Failed', 'missing required headers', 400)
-                print(f'Column names are {", ".join(row)}')
-                line_count += 1
-            else:
-                print(
-                    f'\t{row[0]} works in the {row[1]} department, and was born in {row[2]}.')
-                line_count += 1
-    return response('success', 'file uploaded successfully', 201)
+    if 'file' not in request.files:
+        return response('bad request', 'No file in request', 400)
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return response('bad request', 'No file selected for uploading', 400)
+
+    if file and allowed_file(file.filename):
+        try:
+            data = pd.read_csv(file, usecols=HEADERS, delimiter = ',')
+            csv_headers = [x.lower() for x in data.columns]
+        except Exception as e:
+            result = {
+                'message': str(e)+"Column headers are case senstive. Check your csv file and try again"
+                }
+            return make_response(jsonify(result)), 401
+        
+        for header in HEADERS:
+            if header not in csv_headers:
+                return response('Failed', 'Missing fields in header', 400)
+
+            return response('success', 'file uploaded successfully', 201)
+    return response('bad request', 'Only .csv files allowed', 400)
 
 
 @api.route('/business/amount/incoming/<int:days>')
+@token_required
 def show_incoming(days):
     result = Business.get_incoming_amount(days)
     return
 
+
 api.route('/business/amount/outgoing/<int:days>')
+@token_required
 def show_outgoing(days):
     result = Business.get_outgoing_amount(days)
     return
