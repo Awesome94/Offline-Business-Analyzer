@@ -94,18 +94,12 @@ def upload_transaction_details(filename):
     if file and allowed_file(file.filename):
         try:
             data = pd.read_csv(file, usecols=HEADERS, delimiter = ',')
-            csv_headers = [x.lower() for x in data.columns]
         except Exception as e:
             result = {
                 'message': str(e)+"Column headers are case senstive. Check your csv file and try again"
                 }
             return make_response(jsonify(result)), 401
-        
-        for header in HEADERS:
-            if header not in csv_headers:
-                return response('Failed', 'Missing fields in header', 400)
-
-            return response('success', 'file uploaded successfully', 201)
+        return response('success', 'file uploaded successfully', 201)
     return response('bad request', 'Only .csv files allowed', 400)
 
 
