@@ -104,16 +104,11 @@ class Business(db.Model):
 
 
 class Transaction(db.Model):
-    __tablename__ = 'transaction_details'
-
-    class Name(IntEnum):
-        order = 1
-        order_payement = 2
-        bill = 3
-        bill_payement = 4
+    __tablename__ = 'transactions'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.SmallInteger, default=Name.order.value, nullable=False)
+    transaction_id = db.Column(db.Integer)
+    transaction = db.Column(db.String)
     status = db.Column(db.String)
     due_date = db.Column(db.String)
     transaction_date = db.Column(db.String)
@@ -123,7 +118,7 @@ class Transaction(db.Model):
     unit_amount = db.Column(db.String)
     total_transaction_amount = db.Column(db.String)
     business_id = db.Column(db.Integer, db.ForeignKey('businesses.id'))
-
+    
     business = db.relationship(
         'Business',
         backref=db.backref('transaction_details', lazy='dynamic'),

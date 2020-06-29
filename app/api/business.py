@@ -1,16 +1,18 @@
 from flask import jsonify, abort, request, current_app, make_response
 from . import api
-from ..models import Business
+from ..models import Business, Transaction
 from app.helpers import response, token_required
 import os
 import csv
 from flask_login import current_user
 from app.model_schemas import business_schema
+from app import db
+from werkzeug.utils import secure_filename
 
 import pandas as pd
 
 UPLOAD_DIRECTORY = "/Users/awesome/BusinessAnalyzer/oba-python-api/tests/"
-HEADERS = ['Transaction', 'ID', 'Status', 'Transaction Date', 'Due date', 'Customer or Supplier',
+HEADERS = ['Transaction', 'ID', 'Status', 'Transaction Date', 'Due Date', 'Customer or Supplier',
            'Item', 'Quantity', 'Unit Amount', 'Total Transaction Amount']
 
 ALLOWED_EXTENSIONS = set(['csv'])
@@ -19,10 +21,6 @@ ALLOWED_EXTENSIONS = set(['csv'])
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def check_headers(filename):
-    csv_reader = csv.reader(file.filename, delimiter=',')
-    for row in csv_reader:
-        return
 
 @api.route('/business/register', methods=['POST'])
 def register():
@@ -80,9 +78,9 @@ def get_all_businesses(current_user):
     return jsonify(business_schema.dump(result))
 
 
-@api.route('/business/upload', methods=['POST'])
+@api.route('/business/<int:id>/upload', methods=['POST'])
 @token_required
-def upload_transaction_details(filename):
+def upload_transaction_details(current_user, id):
     if 'file' not in request.files:
         return response('bad request', 'No file in request', 400)
 
@@ -92,12 +90,29 @@ def upload_transaction_details(filename):
         return response('bad request', 'No file selected for uploading', 400)
 
     if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        reader = csv.reader(file)
+        data = pd.read_csv(file, usecols=HEADERS, delimiter=',')
+        data['business_id'] = id
+        data.rename(columns={
+            'Transaction':'transaction', 
+            'ID':'transaction_id', 
+            'Status':'status', 
+            'Transaction Date':'transaction_date', 
+            'Due Date':'due_date',
+            'Customer or Supplier':'customer_or_supplier',
+            'Item':'item', 
+            'Quantity':'quantity', 
+            'Unit Amount':'unit_amount', 
+            'Total Transaction Amount':'total_transaction_amount'
+        })
         try:
-            data = pd.read_csv(file, usecols=HEADERS, delimiter = ',')
+            data.to_sql('transactions', con=db.engine, if_exists='append',
+                        index=False, chunksize=1000)
         except Exception as e:
             result = {
-                'message': str(e)+"Column headers are case senstive. Check your csv file and try again"
-                }
+                'message': str(e)
+            }
             return make_response(jsonify(result)), 401
         return response('success', 'file uploaded successfully', 201)
     return response('bad request', 'Only .csv files allowed', 400)
@@ -111,6 +126,8 @@ def show_incoming(days):
 
 
 api.route('/business/amount/outgoing/<int:days>')
+
+
 @token_required
 def show_outgoing(days):
     result = Business.get_outgoing_amount(days)
