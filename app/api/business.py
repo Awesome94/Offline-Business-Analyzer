@@ -135,11 +135,21 @@ def delete_uploaded_data(current_user, id, filename):
         }
 
 
-@api.route('/business/<int:id>/uploads')
+@api.route('/business/<int:id>/uploads', methods=['GET'])
 @token_required
-def show_uploaded_files(id):
-    pass
-
+def show_uploaded_files(current_user, id):
+    file_names = []
+    if not current_user.is_admin:
+        if not Business.query.filter_by(id=id).first().user_id == current_user.id:
+            return response('Unauthorized', 'User does not have the rights to perform requested action', '401')
+    result = Transaction.query.filter_by(business_id = id).all()
+    for item in result:
+        if item.file_name in file_names:
+            continue
+        file_names.append(item.file_name)
+    return {
+        'titles' : file_names
+    }
 
 @api.route('/business/amount/incoming/<int:days>')
 @token_required
