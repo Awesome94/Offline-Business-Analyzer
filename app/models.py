@@ -7,6 +7,7 @@ import hashlib
 from datetime import date, datetime, timedelta
 from enum import IntEnum, Enum
 
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -117,7 +118,7 @@ class Transaction(db.Model):
     total_transaction_amount = db.Column(db.String)
     business_id = db.Column(db.Integer, db.ForeignKey('businesses.id'))
     file_name = db.Column(db.String)
-    
+
     business = db.relationship(
         'Business',
         backref=db.backref('transaction_details', lazy='dynamic'),
@@ -144,40 +145,38 @@ class Transaction(db.Model):
     def get_business_transactions(id):
         return Transaction.query.filter_by(business_id=id).all()
 
-    def get_top_items_by_quantity(days=30):
-        items = Transaction.query.filter(Transaction.transaction_date == date.today(
-        ) - timedelta(days=days), Transaction.name == Transaction.name.order.value).order_by(Transaction.quantity.desc()).all()
+    def get_top_items_by_quantity(id, limit=5):
+        items = Transaction.query.filter_by(business_id=id).order_by(Transaction.quantity.desc()).limit(limit).all()
         return items
 
-    def get_top_items_by_value(days=30):
-        items = Transaction.query.filter(Transaction.transaction_date == date.today(
-        ) - timedelta(days=days), Transaction.name == Transaction.name.order.value).order_by(Transaction.unit_amount.desc()).all()
+    def get_top_items_by_value(id, limit=5):
+        items = Transaction.query.filter_by(business_id=id).order_by(Transaction.unit_amount.desc()).limit(limit).all()
         return items
-
+ 
     def get_incoming_amount(days=30):
         total_sum = []
-        items = Transaction.query.filter(Transaction.transaction_date>=date.today(
-        ) - timedelta(days=days), Transaction.transaction=='Order').order_by(Transaction.total_transaction_amount.desc()).all()
+        items = Transaction.query.filter(Transaction.transaction_date >= date.today(
+        ) - timedelta(days=days), Transaction.transaction == 'Order').order_by(Transaction.total_transaction_amount.desc()).all()
         for item in items:
             total_sum.append(float(item.total_transaction_amount))
         return sum(total_sum)
 
     def get_outgoing_amount(days=30):
         total_sum = []
-        items = Transaction.query.filter(Transaction.transaction_date>=date.today(
-        ) - timedelta(days=days), Transaction.transaction=='Bill').order_by(Transaction.total_transaction_amount.desc()).all()
+        items = Transaction.query.filter(Transaction.transaction_date >= date.today(
+        ) - timedelta(days=days), Transaction.transaction == 'Bill').order_by(Transaction.total_transaction_amount.desc()).all()
         for item in items:
             total_sum.append(float(item.total_transaction_amount))
         return sum(total_sum)
-
 
     def save(self):
         db.session.add(self)
         db.session.commit()
 
     def delete(filename, id):
-        Transaction.query.filter_by(file_name=filename, business_id = id).delete()
+        Transaction.query.filter_by(
+            file_name=filename, business_id=id).delete()
         db.session.commit()
 
     def get_title(filename):
-        return Transaction.query.filter(Transaction.file_name==filename).all()
+        return Transaction.query.filter(Transaction.file_name == filename).all()

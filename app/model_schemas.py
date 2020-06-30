@@ -13,7 +13,7 @@ class BusinessSchema(ma.Schema):
 
 class TransactionSchema(ma.Schema):
     class Meta:
-        fields = ('name', 'status', 'due_date', 
+        fields = ('transaction', 'status', 'due_date', 'transaction_date',
         'customer_or_supplier', 'item', 'quantity', 
         'unit_amount', 'total_transaction_amount', 
         'business_id')

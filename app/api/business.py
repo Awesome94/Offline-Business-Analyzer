@@ -6,7 +6,7 @@ from . import api
 from ..models import Business, Transaction
 from app.helpers import response, token_required
 from flask_login import current_user
-from app.model_schemas import business_schema
+from app.model_schemas import business_schema, transactions_schema
 from app import db
 from werkzeug.utils import secure_filename
 from datetime import date, datetime, timedelta
@@ -183,3 +183,16 @@ def show_outgoing(current_user, days):
         return {
             'message': str(e)
         }
+
+@api.route('/business/<int:id>/quantity')
+@token_required
+def top_items_quantity(current_user, id):
+    result = Transaction.get_top_items_by_quantity(id)
+    return jsonify(transactions_schema.dump(result))
+
+
+@api.route('/business/<int:id>/value')
+@token_required
+def top_items_quantity(current_user, id):
+    result = Transaction.get_top_items_by_value(id)
+    return jsonify(transactions_schema.dump(result))
