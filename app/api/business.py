@@ -142,14 +142,15 @@ def show_uploaded_files(current_user, id):
     if not current_user.is_admin:
         if not Business.query.filter_by(id=id).first().user_id == current_user.id:
             return response('Unauthorized', 'User does not have the rights to perform requested action', '401')
-    result = Transaction.query.filter_by(business_id = id).all()
+    result = Transaction.query.filter_by(business_id=id).all()
     for item in result:
         if item.file_name in file_names:
             continue
         file_names.append(item.file_name)
     return {
-        'titles' : file_names
+        'titles': file_names
     }
+
 
 @api.route('/business/amount/incoming/<int:days>')
 @token_required
