@@ -1,15 +1,16 @@
+import os
+import pandas as pd
+
 from flask import jsonify, abort, request, current_app, make_response
 from . import api
 from ..models import Business, Transaction
 from app.helpers import response, token_required
-import os
-import csv
 from flask_login import current_user
 from app.model_schemas import business_schema
 from app import db
 from werkzeug.utils import secure_filename
+from datetime import date, datetime, timedelta
 
-import pandas as pd
 
 UPLOAD_DIRECTORY = "/Users/awesome/BusinessAnalyzer/oba-python-api/tests/"
 HEADERS = ['Transaction', 'ID', 'Status', 'Transaction Date', 'Due Date', 'Customer or Supplier',
@@ -88,8 +89,8 @@ def upload_transaction_details(current_user, id):
 
     if file.filename == '':
         return response('bad request', 'No file selected for uploading', 400)
-    if Transaction.get_title(file.filename):
-        return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
+    # if Transaction.get_title(file.filename):
+    #     return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         reader = csv.reader(file)
@@ -97,6 +98,10 @@ def upload_transaction_details(current_user, id):
             data = pd.read_csv(file, usecols=HEADERS, delimiter=',')
             data['business_id'] = id
             data['file_name'] = file.filename
+            data['Due Date'] = pd.to_datetime(
+                data['Due Date'], format="%m/%d/%y", infer_datetime_format=True)
+            data['Transaction Date'] = pd.to_datetime(
+                data['Transaction Date'], format="%m/%d/%y", infer_datetime_format=True)
             data.rename(columns={
                 'Transaction': 'transaction',
                 'ID': 'transaction_id',
@@ -142,7 +147,7 @@ def show_uploaded_files(current_user, id):
     if not current_user.is_admin:
         if not Business.query.filter_by(id=id).first().user_id == current_user.id:
             return response('Unauthorized', 'User does not have the rights to perform requested action', '401')
-    result = Transaction.query.filter_by(business_id=id).all()
+    result = Transaction.get_business_transactions(id)
     for item in result:
         if item.file_name in file_names:
             continue
@@ -152,17 +157,29 @@ def show_uploaded_files(current_user, id):
     }
 
 
-@api.route('/business/amount/incoming/<int:days>')
+@api.route('/business/amount/incoming/<int:days>', methods=['GET'])
 @token_required
-def show_incoming(days):
-    result = Business.get_incoming_amount(days)
-    return
+def show_incoming(current_user, days):
+    try:
+        total_amount = Transaction.get_incoming_amount(days)
+        return {
+            'Incoming amount': total_amount
+        }
+    except Exception as e:
+        return {
+            'message': str(e)
+        }
 
 
 api.route('/business/amount/outgoing/<int:days>')
-
-
 @token_required
 def show_outgoing(days):
-    result = Business.get_outgoing_amount(days)
-    return
+    try:
+        total_amount = Transaction.get_outgoing_amount(days)
+        return {
+            'Incoming amount': total_amount
+        }
+    except Exception as e:
+        return {
+            'message': str(e)
+        }

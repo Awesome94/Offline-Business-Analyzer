@@ -110,8 +110,8 @@ class Transaction(db.Model):
     transaction_id = db.Column(db.Integer)
     transaction = db.Column(db.String)
     status = db.Column(db.String)
-    due_date = db.Column(db.String)
-    transaction_date = db.Column(db.String)
+    due_date = db.Column(db.DateTime)
+    transaction_date = db.Column(db.DateTime)
     customer_or_supplier = db.Column(db.String)
     item = db.Column(db.String)
     quantity = db.Column(db.String)
@@ -144,7 +144,7 @@ class Transaction(db.Model):
         return Business.query.filter_by(id=id)
 
     def get_business_transactions(id):
-        return Business.query.filter_by(business_id=id)
+        return Transaction.query.filter_by(business_id=id).all()
 
     def get_top_items_by_quantity(days=30):
         items = Transaction.query.filter(Transaction.transaction_date == date.today(
@@ -158,19 +158,20 @@ class Transaction(db.Model):
 
     def get_incoming_amount(days=30):
         total_sum = []
-        items = Transaction.query.filter(Transaction.transaction_date == date.today(
-        ) - timedelta(days=days), Transaction.name == Transaction.name.order_payement.value).order_by(Transaction.total_transaction_amount.desc()).all()
+        items = Transaction.query.filter(Transaction.transaction_date>=date.today(
+        ) - timedelta(days=days), Transaction.transaction=='Order').order_by(Transaction.total_transaction_amount.desc()).all()
         for item in items:
-            total_sum.append(item.total_transaction_amount)
+            total_sum.append(float(item.total_transaction_amount))
         return sum(total_sum)
 
     def get_outgoing_amount(days=30):
         total_sum = []
-        items = Transaction.query.filter(Transaction.transaction_date == date.today(
-        ) - timedelta(days=days), Transaction.name == Transaction.name.bill_payement.value).order_by(Transaction.total_transaction_amount.desc()).all()
+        items = Transaction.query.filter(Transaction.transaction_date>=date.today(
+        ) - timedelta(days=days), Transaction.transaction=='Bill').order_by(Transaction.total_transaction_amount.desc()).all()
         for item in items:
-            total_sum.append(item.total_transaction_amount)
+            total_sum.append(float(item.total_transaction_amount))
         return sum(total_sum)
+
 
     def save(self):
         db.session.add(self)
@@ -178,6 +179,7 @@ class Transaction(db.Model):
 
     def delete(filename, id):
         Transaction.query.filter_by(file_name=filename, business_id = id).delete()
+        db.session.commit()
 
     def get_title(filename):
         return Transaction.query.filter(Transaction.file_name==filename).all()
