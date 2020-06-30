@@ -88,25 +88,27 @@ def upload_transaction_details(current_user, id):
 
     if file.filename == '':
         return response('bad request', 'No file selected for uploading', 400)
-
+    if Transaction.get_title(file.filename):
+        return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         reader = csv.reader(file)
-        data = pd.read_csv(file, usecols=HEADERS, delimiter=',')
-        data['business_id'] = id
-        data.rename(columns={
-            'Transaction':'transaction', 
-            'ID':'transaction_id', 
-            'Status':'status', 
-            'Transaction Date':'transaction_date', 
-            'Due Date':'due_date',
-            'Customer or Supplier':'customer_or_supplier',
-            'Item':'item', 
-            'Quantity':'quantity', 
-            'Unit Amount':'unit_amount', 
-            'Total Transaction Amount':'total_transaction_amount'
-        })
         try:
+            data = pd.read_csv(file, usecols=HEADERS, delimiter=',')
+            data['business_id'] = id
+            data['file_name'] = file.filename
+            data.rename(columns={
+                'Transaction': 'transaction',
+                'ID': 'transaction_id',
+                'Status': 'status',
+                'Transaction Date': 'transaction_date',
+                'Due Date': 'due_date',
+                'Customer or Supplier': 'customer_or_supplier',
+                'Item': 'item',
+                'Quantity': 'quantity',
+                'Unit Amount': 'unit_amount',
+                'Total Transaction Amount': 'total_transaction_amount'
+            }, inplace=True)
             data.to_sql('transactions', con=db.engine, if_exists='append',
                         index=False, chunksize=1000)
         except Exception as e:
@@ -116,6 +118,27 @@ def upload_transaction_details(current_user, id):
             return make_response(jsonify(result)), 401
         return response('success', 'file uploaded successfully', 201)
     return response('bad request', 'Only .csv files allowed', 400)
+
+
+@api.route('/business/<int:id>/<filename>', methods=['DELETE'])
+@token_required
+def delete_uploaded_data(current_user, id, filename):
+    try:
+        if not current_user.is_admin:
+            if not Business.query.filter_by(id=id).first().user_id == current_user.id:
+                return response('Unauthorized', 'User does not have the rights to perform requested action', '401')
+        Transaction.delete(filename, id)
+        return response('Success', 'data deleted successfully', 200)
+    except Exception as e:
+        return {
+            'message': str(e)
+        }
+
+
+@api.route('/business/<int:id>/uploads')
+@token_required
+def show_uploaded_files(id):
+    pass
 
 
 @api.route('/business/amount/incoming/<int:days>')

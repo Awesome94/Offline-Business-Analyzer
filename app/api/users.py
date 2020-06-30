@@ -61,6 +61,7 @@ def login_user():
         return make_response(jsonify(response)), 500
 
 @api.route('/logout', methods=['POST'])
+@token_required
 def log_out(self):
     return "logout successful"
 
@@ -71,6 +72,7 @@ def get_users():
     return jsonify(result)
 
 @api.route('/users/<int:id>')
+@token_required
 def get_user(id):
     user = User.get_user(id)
     result = user_schema.dump(user)

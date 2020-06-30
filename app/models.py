@@ -118,6 +118,7 @@ class Transaction(db.Model):
     unit_amount = db.Column(db.String)
     total_transaction_amount = db.Column(db.String)
     business_id = db.Column(db.Integer, db.ForeignKey('businesses.id'))
+    file_name = db.Column(db.String)
     
     business = db.relationship(
         'Business',
@@ -175,7 +176,8 @@ class Transaction(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def delete(id):
-        transaction = Transaction.session.query.filter_by(id=id)
-        db.session.delete(transaction)
-        db.session.commit()
+    def delete(filename, id):
+        Transaction.query.filter_by(file_name=filename, business_id = id).delete()
+
+    def get_title(filename):
+        return Transaction.query.filter(Transaction.file_name==filename).all()
