@@ -27,8 +27,6 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
     def generate_token(self, expiration=3600):
-        import pdb
-        pdb.set_trace()
         token = token_gen.dumps({'confirm': self.id}).decode('utf-8')
         return token
 

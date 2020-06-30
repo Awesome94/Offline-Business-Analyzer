@@ -89,8 +89,8 @@ def upload_transaction_details(current_user, id):
 
     if file.filename == '':
         return response('bad request', 'No file selected for uploading', 400)
-    # if Transaction.get_title(file.filename):
-    #     return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
+    if Transaction.get_title(file.filename):
+        return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         reader = csv.reader(file)
@@ -171,13 +171,13 @@ def show_incoming(current_user, days):
         }
 
 
-api.route('/business/amount/outgoing/<int:days>')
+@api.route('/business/amount/outgoing/<int:days>', methods=['GET'])
 @token_required
-def show_outgoing(days):
+def show_outgoing(current_user, days):
     try:
         total_amount = Transaction.get_outgoing_amount(days)
         return {
-            'Incoming amount': total_amount
+            'outgoing amount': total_amount
         }
     except Exception as e:
         return {
