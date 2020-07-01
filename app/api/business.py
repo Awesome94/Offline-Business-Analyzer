@@ -93,7 +93,6 @@ def upload_transaction_details(current_user, id):
         return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        reader = csv.reader(file)
         try:
             data = pd.read_csv(file, usecols=HEADERS, delimiter=',')
             data['business_id'] = id
