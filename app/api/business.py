@@ -192,6 +192,6 @@ def top_items_quantity(current_user, id):
 
 @api.route('/business/<int:id>/value')
 @token_required
-def top_items_quantity(current_user, id):
+def top_items_quality(current_user, id):
     result = Transaction.get_top_items_by_value(id)
     return jsonify(transactions_schema.dump(result))
