@@ -6,10 +6,14 @@ from flask_login import LoginManager
 from itsdangerous import JSONWebSignatureSerializer as Serializer
 from os import environ
 from dotenv import load_dotenv
+from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 
 load_dotenv()
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+CORS(app)
 app.config.from_object('config.DevelopmentConfig')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 token_gen = Serializer(app.config['SECRET_KEY'])

@@ -1,4 +1,4 @@
-from werkzeug.security import generate_password_hash
+# from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify, make_response, request, current_app, url_for
 from . import api
 from app.models import User
@@ -36,8 +36,9 @@ def login_user():
     try:
         # Get the user object using their email
         user = User.query.filter_by(email=request.json.get('email')).first()
+        password = request.json.get('password')
         # Try to authenticate the found user using their password
-        if user and user.verify_password(request.json.get('password')):
+        if user and user.verify_password(password):
             # Generate the access token. This will be used as the authorization header
             access_token = user.generate_token(user.id)
             if access_token:
@@ -45,6 +46,7 @@ def login_user():
                     'message': 'You logged in successfully.',
                     'access_token': access_token
                 }
+      
                 return make_response(jsonify(response)), 200
         else:
             # User does not exist. so error message

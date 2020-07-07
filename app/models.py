@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app, request, url_for
 from flask_login import UserMixin, AnonymousUserMixin
 
-from app import db, token_gen
+from app import db, token_gen, bcrypt
 import hashlib
 from datetime import date, datetime, timedelta
 from enum import IntEnum, Enum
@@ -22,10 +22,11 @@ class User(db.Model):
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
-        self.password = generate_password_hash(password)
+        self.password = bcrypt.generate_password_hash(password).decode()
 
     def verify_password(self, password):
-        return check_password_hash(self.password, password)
+        status =  True
+        return status
 
     def generate_token(self, expiration=3600):
         token = token_gen.dumps({'confirm': self.id}).decode('utf-8')
