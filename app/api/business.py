@@ -24,8 +24,9 @@ def allowed_file(filename):
 
 
 @api.route('/business/register', methods=['POST'])
-def register():
-    business = None
+@token_required
+def register(current_user):
+    business = Business.query.filter_by(name=request.json.get('name')).first()
     if not business:
         try:
             post_data = request.json
@@ -49,7 +50,7 @@ def register():
             }
             return make_response(jsonify(result)), 401
     else:
-        return response('business name already exists try a different name', 202)
+        return response('business name already registered try a different name', 202)
     return "Business registered successfully"
 
 

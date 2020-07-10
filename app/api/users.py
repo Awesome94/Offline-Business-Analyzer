@@ -5,9 +5,11 @@ from app.models import User
 from app.helpers import response, token_required
 from app.model_schemas import user_schema
 
+
 @api.route('/')
 def index():
     return response('success', "Welcome to offline Business application", 200)
+
 
 @api.route('/register', methods=['POST'])
 def register_user():
@@ -31,6 +33,7 @@ def register_user():
         return response('User already exists', 'Please Login', 202)
     return "user registered successfully"
 
+
 @api.route('/login', methods=['POST'])
 def login_user():
     try:
@@ -46,7 +49,7 @@ def login_user():
                     'message': 'You logged in successfully.',
                     'access_token': access_token
                 }
-      
+
                 return make_response(jsonify(response)), 200
         else:
             # User does not exist. so error message
@@ -62,16 +65,19 @@ def login_user():
         # Return a server error using the HTTP Error Code 500 (Internal Server Error)
         return make_response(jsonify(response)), 500
 
+
 @api.route('/logout', methods=['POST'])
 @token_required
 def log_out(self):
     return "logout successful"
+
 
 @api.route('/users/all')
 def get_users():
     users = User.get_all()
     result = user_schema.dump(users)
     return jsonify(result)
+
 
 @api.route('/users/<int:id>')
 @token_required

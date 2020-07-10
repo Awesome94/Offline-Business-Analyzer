@@ -25,7 +25,7 @@ class User(db.Model):
         self.password = bcrypt.generate_password_hash(password).decode()
 
     def verify_password(self, password):
-        status =  True
+        status =  bcrypt.check_password_hash(self.password, password)
         return status
 
     def generate_token(self, expiration=3600):
@@ -73,7 +73,7 @@ class Business(db.Model):
 
     def __init__(self, name, abbreviation, company_address, country, countries, annual_sales_revenue, accounting_software):
         self.name = name
-        self.abreviation = abreviation
+        self.abbreviation = abbreviation
         self.company_address = company_address
         self.country = country
         self.countries = countries
