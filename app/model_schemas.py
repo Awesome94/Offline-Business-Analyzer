@@ -7,13 +7,13 @@ class UserSchema(ma.Schema):
 
 class BusinessSchema(ma.Schema):
     class Meta:
-        fields = ('name','abreviation', 'company_address', 'country', 
+        fields = ('id', 'name','abreviation', 'company_address', 'country', 
         'countries', 'annual_sales_revenue', 'Entity', 
         'accounting_software', 'user_id')
 
 class TransactionSchema(ma.Schema):
     class Meta:
-        fields = ('transaction', 'status', 'due_date', 'transaction_date',
+        fields = ('id', 'transaction', 'status', 'due_date', 'transaction_date',
         'customer_or_supplier', 'item', 'quantity', 
         'unit_amount', 'total_transaction_amount', 
         'business_id')

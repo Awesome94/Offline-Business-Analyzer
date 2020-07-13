@@ -23,7 +23,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@api.route('/business/register', methods=['POST'])
+@api.route('/business/register', methods=['POST', 'PUT'])
 @token_required
 def register(current_user):
     business = Business.query.filter_by(name=request.json.get('name')).first()
@@ -121,7 +121,7 @@ def upload_transaction_details(current_user, id):
                 'message': str(e)
             }
             return make_response(jsonify(result)), 401
-        return response('success', 'file uploaded successfully', 201)
+        return data.to_json()
     return response('bad request', 'Only .csv files allowed', 400)
 
 
@@ -140,13 +140,28 @@ def delete_uploaded_data(current_user, id, filename):
         }
 
 
+@api.route('/business/<int:id>', methods=['DELETE'])
+@token_required
+def delete_business_data(current_user, id):
+    try:
+        if not current_user.is_admin:
+            if not Business.query.filter_by(id=id).first().user_id == current_user.id:
+                return response('Unauthorized', 'User does not have the rights to perform requested action', '401')
+        Business.delete(id)
+        return response('Success', 'Deleted successfully', 200)
+    except Exception as e:
+        return {
+            'message': str(e)
+        }
+
+
 @api.route('/business/<int:id>/uploads', methods=['GET'])
 @token_required
 def show_uploaded_files(current_user, id):
     file_names = []
     if not current_user.is_admin:
         if not Business.query.filter_by(id=id).first().user_id == current_user.id:
-            return response('Unauthorized', 'User does not have the rights to perform requested action', '401')
+            return response('Unauthorized', 'User does not have the permissions to perform requested action', '401')
     result = Transaction.get_business_transactions(id)
     for item in result:
         if item.file_name in file_names:
