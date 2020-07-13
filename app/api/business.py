@@ -155,6 +155,16 @@ def delete_business_data(current_user, id):
         }
 
 
+@api.route('/transactions/<int:id>', methods=['GET'])
+@token_required
+def get_transaction_data(current_user, id):
+    if not current_user.is_admin:
+        if not Business.query.filter_by(id=id).first().user_id == current_user.id:
+            return response('Unauthorized', 'User does not have the permissions to perform requested action', '401')
+    result = Transaction.get_business_transactions(id)
+    return jsonify(transactions_schema.dump(result))
+
+
 @api.route('/business/<int:id>/uploads', methods=['GET'])
 @token_required
 def show_uploaded_files(current_user, id):
