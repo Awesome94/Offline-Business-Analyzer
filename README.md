@@ -1,7 +1,6 @@
-## Bank-API
+## OBA-API (Offline Business Analyzer)
 
-Bank RestFul APIs built with Flask and Python.
-
+OBA RestFul APIs built with Flask and Python.
 -   Live API can be found here.
 
 ## Overview
@@ -9,7 +8,7 @@ This is a RestApi for performing basic business transactions and computations su
 
 -   Register a business.
 -   Upload a file. (csv)
--   Get top-performing items by value and quantity   
+-   Get Top-performing items by value and quantity   
 
 HTTP |End Point  | Result
 --- | --- | ----------
