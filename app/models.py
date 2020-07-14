@@ -1,12 +1,17 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app, request, url_for
+from itsdangerous import JSONWebSignatureSerializer as Serializer
 from flask_login import UserMixin, AnonymousUserMixin
-
-from app import db, token_gen, bcrypt
+from flask_bcrypt import Bcrypt
+import os
+from app import db
 import hashlib
 from datetime import date, datetime, timedelta
 from enum import IntEnum, Enum
 
+
+token_gen = Serializer(os.environ['SECRET_KEY'])
+bcrypt = Bcrypt()
 
 class User(db.Model):
     __tablename__ = 'users'

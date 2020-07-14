@@ -8,7 +8,10 @@ class Config(object):
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     TOKEN_EXPIRATION = os.environ['TOKEN_EXPIRATION']
-
+    
+    @staticmethod
+    def init_app(app):
+        pass
 
 class ProductionConfig(Config):
     DEBUG = False

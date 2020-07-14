@@ -2,33 +2,28 @@ from flask import Flask, request, g, Blueprint, current_app
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from itsdangerous import JSONWebSignatureSerializer as Serializer
 from os import environ
 from dotenv import load_dotenv, find_dotenv
 from flask_cors import CORS
-from flask_bcrypt import Bcrypt
-from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
+from config import Config
 
 
-app = Flask(__name__)
-load_dotenv(find_dotenv())
-bcrypt = Bcrypt(app)
+db = SQLAlchemy()
+ma = Marshmallow()
+login = LoginManager()
 
-CORS(app)
-app.config.from_object('config.DevelopmentConfig')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-token_gen = Serializer(app.config['SECRET_KEY'])
+def create_app(config_name):
+    app = Flask(__name__)
+    CORS(app)
+    app.config.from_object('config.DevelopmentConfig')
+    Config['development'].init_app(app)
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+    ma.init_app(app)
+    login.init_app(app)
 
-db = SQLAlchemy(app)
-ma = Marshmallow(app)
-login = LoginManager(app)
+    from .api import api as api_blueprint
+    app.register_blueprint(api_blueprint)
 
-manager = Manager(app)
-migrate = Migrate(app, db)
-
-
-from .api import api as api_blueprint
-app.register_blueprint(api_blueprint)
-
-from app import models
+    return app

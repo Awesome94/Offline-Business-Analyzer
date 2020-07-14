@@ -1,7 +1,6 @@
 import os
 from flask import Flask, flash, request, make_response, jsonify
-from app import token_gen
-from app.models import User
+from app.models import User, token_gen
 from functools import wraps
 
 
