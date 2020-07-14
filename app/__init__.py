@@ -1,4 +1,3 @@
-import boto3
 from flask import Flask, request, g, Blueprint, current_app
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
@@ -21,15 +20,12 @@ app.config.from_object('config.DevelopmentConfig')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 token_gen = Serializer(app.config['SECRET_KEY'])
 
-s3 = boto3.resource('s3')
-s3_path = 's3:://{name of the bucket}/{csv_name}'
-
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 login = LoginManager(app)
 
-migrate = Migrate(app, db)
 manager = Manager(app)
+migrate = Migrate(app, db)
 
 
 from .api import api as api_blueprint

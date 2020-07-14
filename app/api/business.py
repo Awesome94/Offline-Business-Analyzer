@@ -54,7 +54,7 @@ def register(current_user):
     return "Business registered successfully"
 
 
-@api.route('/business/<init:id>', methods=['PUT'])
+@api.route('/business/<int:id>', methods=['PUT'])
 @token_required
 def update_business_data(current_user, id):
     business = Business.query.filter_by(name=request.json.get('name')).first()
