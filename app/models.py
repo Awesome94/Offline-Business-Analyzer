@@ -79,7 +79,7 @@ class Business(db.Model):
         self.countries = countries
         self.annual_sales_revenue = annual_sales_revenue
         self.accounting_software = accounting_software
-        # self.user_id = user_id
+        self.user_id = user_id
 
     def get_all():
         return Business.query.all()
@@ -122,7 +122,7 @@ class Transaction(db.Model):
 
     business = db.relationship(
         'Business',
-        backref=db.backref('transaction_details', lazy='dynamic'),
+        backref=db.backref('transactions', lazy='dynamic', cascade="all,delete"),
         uselist=False
     )
 
@@ -154,18 +154,18 @@ class Transaction(db.Model):
         items = Transaction.query.filter_by(business_id=id).order_by(Transaction.unit_amount.desc()).limit(limit).all()
         return items
  
-    def get_incoming_amount(days=30):
+    def get_incoming_amount(id, days=30):
         total_sum = []
-        items = Transaction.query.filter(Transaction.transaction_date >= date.today(
+        items = Transaction.query.filter(Transaction.business_id==id, Transaction.transaction_date >= date.today(
         ) - timedelta(days=days), Transaction.transaction == 'Order').order_by(Transaction.total_transaction_amount.desc()).all()
         for item in items:
             total_sum.append(float(item.total_transaction_amount))
         return sum(total_sum)
 
-    def get_outgoing_amount(days=30):
+    def get_outgoing_amount(id, days=30):
         total_sum = []
         items = Transaction.query.filter(Transaction.transaction_date >= date.today(
-        ) - timedelta(days=days), Transaction.transaction == 'Bill').order_by(Transaction.total_transaction_amount.desc()).all()
+        ) - timedelta(days=days), Transaction.business_id==id, Transaction.transaction == 'Bill').order_by(Transaction.total_transaction_amount.desc()).all()
         for item in items:
             total_sum.append(float(item.total_transaction_amount))
         return sum(total_sum)
@@ -178,6 +178,6 @@ class Transaction(db.Model):
         Transaction.query.filter_by(
             file_name=filename, business_id=id).delete()
         db.session.commit()
-
+        
     def get_title(filename):
         return Transaction.query.filter(Transaction.file_name == filename).all()
