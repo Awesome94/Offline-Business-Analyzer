@@ -122,7 +122,7 @@ class Transaction(db.Model):
 
     business = db.relationship(
         'Business',
-        backref=db.backref('transaction_details', lazy='dynamic'),
+        backref=db.backref('transactions', lazy='dynamic', cascade="all,delete"),
         uselist=False
     )
 
