@@ -23,7 +23,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@api.route('/business/register', methods=['POST', 'PUT'])
+@api.route('/business/register', methods=['POST'])
 @token_required
 def register(current_user):
     business = Business.query.filter_by(name=request.json.get('name')).first()
@@ -40,7 +40,7 @@ def register(current_user):
             business = Business(name=name, abbreviation=abbreviation,
                                 company_address=company_address, country=country,
                                 countries=countries, annual_sales_revenue=annual_sales_revenue,
-                                accounting_software=software
+                                accounting_software=software, user_id = current_user.id
                                 )
             business.save()
             return response('success', 'Business registered successfully', 201)
@@ -50,7 +50,7 @@ def register(current_user):
             }
             return make_response(jsonify(result)), 401
     else:
-        return response('business name already registered try a different name', 202)
+        return response('Error', 'business name already registered try a different name', 202)
     return "Business registered successfully"
 
 
@@ -68,10 +68,11 @@ def update_business_data(current_user, id):
             countries = post_data.get("countries_of_operation")
             annual_sales_revenue = post_data.get("annual_sales_revenue")
             software = post_data.get("software")
+            user_id = current_user.id
             business = Business(name=name, abbreviation=abbreviation,
                                 company_address=company_address, country=country,
                                 countries=countries, annual_sales_revenue=annual_sales_revenue,
-                                accounting_software=software, user_id=current_user.id
+                                accounting_software=software, user_id=user_id
                                 )
             business.save()
             return response('success', 'Business updated successfully', 200)

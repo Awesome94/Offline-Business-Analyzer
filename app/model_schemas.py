@@ -7,7 +7,7 @@ class UserSchema(ma.Schema):
 
 class BusinessSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name','abreviation', 'company_address', 'country', 
+        fields = ('id', 'name','abbreviation', 'company_address', 'country', 
         'countries', 'annual_sales_revenue', 'Entity', 
         'accounting_software', 'user_id')
 

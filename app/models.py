@@ -71,7 +71,7 @@ class Business(db.Model):
         uselist=False
     )
 
-    def __init__(self, name, abbreviation, company_address, country, countries, annual_sales_revenue, accounting_software):
+    def __init__(self, name, abbreviation, company_address, country, countries, annual_sales_revenue, accounting_software, user_id):
         self.name = name
         self.abbreviation = abbreviation
         self.company_address = company_address
