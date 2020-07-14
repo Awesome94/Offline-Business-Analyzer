@@ -54,6 +54,35 @@ def register(current_user):
     return "Business registered successfully"
 
 
+@api.route('/business/<init:id>', methods=['PUT'])
+@token_required
+def update_business_data(current_user, id):
+    business = Business.query.filter_by(name=request.json.get('name')).first()
+    if business:
+        try:
+            post_data = request.json
+            name = post_data.get("name")
+            abbreviation = post_data.get("abbreviation")
+            company_address = post_data.get("company_address")
+            country = post_data.get("country")
+            countries = post_data.get("countries_of_operation")
+            annual_sales_revenue = post_data.get("annual_sales_revenue")
+            software = post_data.get("software")
+            business = Business(name=name, abbreviation=abbreviation,
+                                company_address=company_address, country=country,
+                                countries=countries, annual_sales_revenue=annual_sales_revenue,
+                                accounting_software=software, user_id=current_user.id
+                                )
+            business.save()
+            return response('success', 'Business updated successfully', 200)
+        except Exception as e:
+            result = {
+                'message': str(e)
+            }
+            return make_response(jsonify(result)), 401
+    else:
+        return response('business not registered register first', 202)
+
 @api.route('/business/<int:id>')
 @token_required
 def get_business(current_user, id):
@@ -196,13 +225,16 @@ def show_incoming(current_user, days):
         }
 
 
-@api.route('/business/amount/outgoing/<int:days>', methods=['GET'])
+@api.route('/business/id/amount/outgoing/<int:days>', methods=['GET'])
 @token_required
 def show_outgoing(current_user, days):
     try:
-        total_amount = Transaction.get_outgoing_amount(days)
+        outgoing_amount = Transaction.get_outgoing_amount(id, days)
+        incoming_amount = Transaction.get_incoming_amount(id, days)
+
         return {
-            'outgoing amount': total_amount
+            'outgoing_amount': outgoing_amount,
+            'incoming_amount':incoming_amount
         }
     except Exception as e:
         return {

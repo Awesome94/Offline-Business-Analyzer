@@ -79,7 +79,7 @@ class Business(db.Model):
         self.countries = countries
         self.annual_sales_revenue = annual_sales_revenue
         self.accounting_software = accounting_software
-        # self.user_id = user_id
+        self.user_id = user_id
 
     def get_all():
         return Business.query.all()
