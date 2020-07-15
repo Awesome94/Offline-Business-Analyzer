@@ -17,13 +17,12 @@ from app.models import User, Business
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 
-manager = Manager(app)
 
 @app.shell_context_processor
 def make_shell_context():
     return dict(db=db, User=User, Business=Business)
 
-@manager.command
+@app.cli.command()
 def deploy():
     # migrate database to latest revision
     upgrade()

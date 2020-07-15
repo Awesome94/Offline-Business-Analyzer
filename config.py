@@ -6,7 +6,7 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = 'this-really-needs-to-be-changed'
-    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    SQLALCHEMY_DATABASE_URL = os.environ['DATABASE_URL']
     TOKEN_EXPIRATION = os.environ['TOKEN_EXPIRATION']
     SSL_REDIRECT = False
     
