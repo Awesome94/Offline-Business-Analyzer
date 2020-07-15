@@ -117,7 +117,6 @@ def upload_transaction_details(current_user, id):
         return response('bad request', 'No file in request', 400)
 
     file = request.files['file']
-
     if file.filename == '':
         return response('bad request', 'No file selected for uploading', 400)
     if Transaction.get_title(file.filename):
