@@ -8,6 +8,7 @@ class Config(object):
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     TOKEN_EXPIRATION = os.environ['TOKEN_EXPIRATION']
+    SSL_REDIRECT = False
     
     @staticmethod
     def init_app(app):
@@ -30,6 +31,22 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
 
+class HerokuConfig(ProductionConfig): 
+    @classmethod
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
+        # log to stderr
+        import logging
+        from logging import StreamHandler 
+        file_handler = StreamHandler() 
+        file_handler.setLevel(logging.INFO) 
+        app.logger.addHandler(file_handler)
+        SSL_REDIRECT = True if os.environ.get('DYNO') else False
+        # handle reverse proxy
+        from werkzeug.contrib.fixers import ProxyFix 
+        app.wsgi_app = ProxyFix(app.wsgi_app)
+
+
 class DockerConfig(ProductionConfig):
     @classmethod
     def init_app(cls, app):
@@ -45,5 +62,6 @@ Config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
     'production': ProductionConfig,
-    'docker': DockerConfig
+    'docker': DockerConfig,
+    'heroku': HerokuConfig
 }

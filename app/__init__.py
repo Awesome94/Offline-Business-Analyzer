@@ -20,10 +20,14 @@ def create_app(config_name):
     Config['development'].init_app(app)
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+    migrate = Migrate(app, db)
     ma.init_app(app)
     login.init_app(app)
 
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint)
 
+    if app.config['SSL_REDIRECT']:
+        from flask_sslify import SSLify 
+        sslify = SSLify(app)
     return app
