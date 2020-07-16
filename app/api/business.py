@@ -10,7 +10,7 @@ from app.model_schemas import business_schema, transactions_schema
 from app import db
 from werkzeug.utils import secure_filename
 from datetime import date, datetime, timedelta
-
+from .errors import unauthorized, bad_request
 
 UPLOAD_DIRECTORY = "/Users/awesome/BusinessAnalyzer/oba-python-api/tests/"
 HEADERS = ['Transaction', 'ID', 'Status', 'Transaction Date', 'Due Date', 'Customer or Supplier',
@@ -88,7 +88,7 @@ def update_business_data(current_user, id):
 @token_required
 def get_business(current_user, id):
     if not isinstance(id, int):
-        return response('Bad request', 'Id must be integer', 500)
+        return bad_request('Id must be integer')
     if current_user.is_admin:
         result = Business.get_business(id)
     else:
@@ -114,11 +114,11 @@ def get_all_businesses(current_user):
 @token_required
 def upload_transaction_details(current_user, id):
     if 'file' not in request.files:
-        return response('bad request', 'No file in request', 400)
+        return bad_request('No file in request')
 
     file = request.files['file']
     if file.filename == '':
-        return response('bad request', 'No file selected for uploading', 400)
+        return bad_request('No file selected for uploading')
     if Transaction.get_title(file.filename):
         return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
     if file and allowed_file(file.filename):
@@ -151,7 +151,7 @@ def upload_transaction_details(current_user, id):
             }
             return make_response(jsonify(result)), 401
         return data.to_json()
-    return response('bad request', 'Only .csv files allowed', 400)
+    return bad_request('Only .csv files allowed')
 
 
 @api.route('/business/<int:id>/<filename>', methods=['DELETE'])
@@ -200,7 +200,7 @@ def show_uploaded_files(current_user, id):
     file_names = []
     if not current_user.is_admin:
         if not Business.query.filter_by(id=id).first().user_id == current_user.id:
-            return response('Unauthorized', 'User does not have the permissions to perform requested action', '401')
+            return unauthorized('User does not have the permissions to perform requested action')
     result = Transaction.get_business_transactions(id)
     for item in result:
         if item.file_name in file_names:
