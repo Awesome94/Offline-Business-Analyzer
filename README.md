@@ -1,7 +1,8 @@
 ## OBA-API (Offline Business Analyzer)
 
 OBA RestFul APIs built with Flask and Python.
--   Live API can be found here.
+-   Live API can be found [here]('https://oba-api.herokuapp.com/').
+-   Documentation can be found [here]('https://documenter.getpostman.com/view/11776096/T1DiHMHq?version=latest')
 
 ## Overview
 This is a RestApi for performing basic business transactions and computations such as:
@@ -27,7 +28,7 @@ POST | `/v1/login` | Logs in registered user and returns a token.
 GET | `/v1/business/<int:id>/value` | Returns top 5 items from transactions by value
 GET | `/v1/business/<int:id>/quantity` | Returns top 5 items from transactions by quantity.
 POST | `/v1/logout` | Logs out current user and deletes user session.
-DELETE | `/v1//business/<int:id>` | Deletes business that matches the provided ID.
+DELETE | `/v1/business/<int:id>` | Deletes business that matches the provided ID.
 DELETE | `/v1/business/<int:id>/<filename>` | Deletes Uploaded file data specified by name.
 
 ## Installation

@@ -119,7 +119,7 @@ def upload_transaction_details(current_user, id):
     file = request.files['file']
     if file.filename == '':
         return bad_request('No file selected for uploading')
-    if Transaction.get_title(file.filename):
+    if Transaction.get_title(file.filename, id):
         return response('Already exists', 'File with title %s has already been uploaded' % file.filename, 400)
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -191,7 +191,44 @@ def get_transaction_data(current_user, id):
         if not Business.query.filter_by(id=id).first().user_id == current_user.id:
             return response('Unauthorized', 'User does not have the permissions to perform requested action', '401')
     result = Transaction.get_business_transactions(id)
-    return jsonify(transactions_schema.dump(result))
+    topQuantity = Transaction.get_top_qty(id)
+    topValue =Transaction.get_top_value(id)
+    total_orders = 0
+    total_order_payments=0
+    total_bills = 0
+    total_bill_payements =0
+    qtyData=[]
+    valData =[]
+    topProduct = None
+    business = Business.get_business(id)
+    for item in result:
+        if item.transaction=="Order":
+            total_orders+=float(item.total_transaction_amount)
+        if item.transaction=="Order Payement":
+            total_order_payments+=float(item.total_transaction_amount)
+        if item.transaction=="Bill":
+            total_bills+=float(item.total_transaction_amount)
+        if item.transaction=="Bill Payement":
+            total_bill_payements+=float(item.total_transaction_amount)
+
+    amount_incoming = total_orders-total_order_payments
+    amount_outgoing = total_bills-total_bill_payements
+    currentUser = current_user.firstname +' '+  current_user.lastname
+    for (k, v) in topQuantity.items():
+        if not topProduct:
+            topProduct = k
+        qtyData.append({"name":k, "Quantity":round(v, 2)})
+    for (k, v )in topValue.items():
+        valData.append({"name":k, "Value":round(v, 2)})
+    return  {
+        "topProduct":topProduct,
+        "currentUser":currentUser,
+        "businessName":business.name,
+        "topQuantity":qtyData,
+        "topValue":valData,
+        "incoming":round(amount_incoming, 2),
+        "outgoing":round(amount_outgoing, 2)
+    }
 
 
 @api.route('/business/<int:id>/uploads', methods=['GET'])
@@ -241,15 +278,18 @@ def show_outgoing(current_user, days):
             'message': str(e)
         }
 
-@api.route('/business/<int:id>/quantity')
+@api.route('/business/<int:id>/quantity', defaults={'days':30})
+@api.route('/business/<int:id>/quantity/<int:days>')
 @token_required
 def top_items_quantity(current_user, id):
     result = Transaction.get_top_items_by_quantity(id)
-    return jsonify(transactions_schema.dump(result))
+    return result
 
 
-@api.route('/business/<int:id>/value')
+@api.route('/business/<int:id>/quantity', defaults={'days':30})
+@api.route('/business/<int:id>/value/<int:days>')
 @token_required
 def top_items_quality(current_user, id):
     result = Transaction.get_top_items_by_value(id)
-    return jsonify(transactions_schema.dump(result))
+    return result
+
