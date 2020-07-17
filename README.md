@@ -1,8 +1,8 @@
 ## OBA-API (Offline Business Analyzer)
 
 OBA RestFul APIs built with Flask and Python.
--   Live API can be found [here]('https://oba-api.herokuapp.com/').
--   Documentation can be found [here]('https://documenter.getpostman.com/view/11776096/T1DiHMHq?version=latest')
+-   Live API can be found here https://bit.ly/32sEFr2
+-   Documentation can be found here  https://bit.ly/32oZGTm
 
 ## Overview
 This is a RestApi for performing basic business transactions and computations such as:
