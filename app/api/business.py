@@ -57,23 +57,19 @@ def register(current_user):
 @api.route('/business/<int:id>', methods=['PUT'])
 @token_required
 def update_business_data(current_user, id):
-    business = Business.query.filter_by(name=request.json.get('name')).first()
+    business = Business.query.filter_by(id=id).first()
     if business:
         try:
             post_data = request.json
-            name = post_data.get("name")
-            abbreviation = post_data.get("abbreviation")
-            company_address = post_data.get("company_address")
-            country = post_data.get("country")
-            countries = post_data.get("countries_of_operation")
-            annual_sales_revenue = post_data.get("annual_sales_revenue")
-            software = post_data.get("software")
-            user_id = current_user.id
-            business = Business(name=name, abbreviation=abbreviation,
-                                company_address=company_address, country=country,
-                                countries=countries, annual_sales_revenue=annual_sales_revenue,
-                                accounting_software=software, user_id=user_id
-                                )
+            business.name = post_data.get("name")
+            business.abbreviation = post_data.get("abbreviation")
+            business.company_address = post_data.get("company_address")
+            business.country = post_data.get("country")
+            business.countries = post_data.get("countries_of_operation")
+            business.annual_sales_revenue = post_data.get("annual_sales_revenue")
+            business.software = post_data.get("software")
+            business.user_id = current_user.id
+            business.Entity = post_data.get("entity")
             business.save()
             return response('success', 'Business updated successfully', 200)
         except Exception as e:
@@ -82,7 +78,7 @@ def update_business_data(current_user, id):
             }
             return make_response(jsonify(result)), 401
     else:
-        return response('business not registered register first', 202)
+        return response('warning', 'business not registered register first', 202)
 
 @api.route('/business/<int:id>')
 @token_required

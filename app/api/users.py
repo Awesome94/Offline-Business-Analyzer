@@ -31,7 +31,7 @@ def register_user():
             }
             return make_response(jsonify(result)), 401
     else:
-        return response('User already exists', 'Please Login', 202)
+        return response('Conflict', 'User already exists Please Login', 409)
 
 
 @api.route('/login', methods=['POST'])
