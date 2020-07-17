@@ -67,7 +67,7 @@ class Business(db.Model):
 	company_address = db.Column(db.String)
 	country = db.Column(db.String)
 	countries = db.Column(db.JSON, nullable=True)
-	annual_sales_revenue = db.Column(db.Float)
+	annual_sales_revenue = db.Column(db.String)
 	Entity = db.Column(db.String)
 	accounting_software = db.Column(db.String)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
