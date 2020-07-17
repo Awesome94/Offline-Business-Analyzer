@@ -36,11 +36,12 @@ def register(current_user):
             country = post_data.get("country")
             countries = post_data.get("countries_of_operation")
             annual_sales_revenue = post_data.get("annual_sales_revenue")
+            entity = post_data.get("entity")
             software = post_data.get("software")
             business = Business(name=name, abbreviation=abbreviation,
                                 company_address=company_address, country=country,
                                 countries=countries, annual_sales_revenue=annual_sales_revenue,
-                                accounting_software=software, user_id = current_user.id
+                                accounting_software=software, user_id = current_user.id, entity=entity
                                 )
             business.save()
             return response('success', 'Business registered successfully', 201)
@@ -69,7 +70,7 @@ def update_business_data(current_user, id):
             business.annual_sales_revenue = post_data.get("annual_sales_revenue")
             business.software = post_data.get("software")
             business.user_id = current_user.id
-            business.Entity = post_data.get("entity")
+            business.entity = post_data.get("entity")
             business.save()
             return response('success', 'Business updated successfully', 200)
         except Exception as e:
