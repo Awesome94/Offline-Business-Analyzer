@@ -214,9 +214,9 @@ def get_transaction_data(current_user, id):
     for (k, v) in topQuantity.items():
         if not topProduct:
             topProduct = k
-        qtyData.append({"name":k, "Quantity":round(v, 2)})
+        qtyData.append({"Item":k, "Quantity":round(v, 2)})
     for (k, v )in topValue.items():
-        valData.append({"name":k, "Value":round(v, 2)})
+        valData.append({"Item":k, "Value":round(v, 2)})
     return  {
         "topProduct":topProduct,
         "currentUser":currentUser,
