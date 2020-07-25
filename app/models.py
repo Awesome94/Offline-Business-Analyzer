@@ -68,7 +68,7 @@ class Business(db.Model):
 	country = db.Column(db.String)
 	countries = db.Column(db.JSON, nullable=True)
 	annual_sales_revenue = db.Column(db.String)
-	Entity = db.Column(db.String)
+	entity = db.Column(db.String)
 	accounting_software = db.Column(db.String)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -87,7 +87,7 @@ class Business(db.Model):
 		self.annual_sales_revenue = annual_sales_revenue
 		self.accounting_software = accounting_software
 		self.user_id = user_id
-		self.Entity = Entity
+		self.Entity = entity
 
 	def get_all():
 		return Business.query.all()

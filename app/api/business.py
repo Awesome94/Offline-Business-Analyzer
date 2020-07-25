@@ -41,7 +41,7 @@ def register(current_user):
             business = Business(name=name, abbreviation=abbreviation,
                                 company_address=company_address, country=country,
                                 countries=countries, annual_sales_revenue=annual_sales_revenue,
-                                accounting_software=software, user_id = current_user.id, Entity=entity
+                                accounting_software=software, user_id = current_user.id, entity=entity
                                 )
             business.save()
             return response('success', 'Business registered successfully', 201)
